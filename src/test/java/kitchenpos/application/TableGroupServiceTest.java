@@ -1,12 +1,12 @@
 package kitchenpos.application;
 
-import kitchenpos.dao.OrderDao;
-import kitchenpos.dao.OrderTableDao;
-import kitchenpos.dao.TableGroupDao;
 import kitchenpos.order.domain.OrderStatus;
+import kitchenpos.order.repository.OrderRepository;
 import kitchenpos.ordertable.domain.OrderTable;
+import kitchenpos.ordertable.repository.OrderTableRepository;
 import kitchenpos.tablegroup.application.TableGroupService;
 import kitchenpos.tablegroup.domain.TableGroup;
+import kitchenpos.tablegroup.repository.TableGroupRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,13 +29,13 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class TableGroupServiceTest {
     @Mock
-    private OrderDao orderDao;
+    private TableGroupRepository tableGroupRepository;
 
     @Mock
-    private OrderTableDao orderTableDao;
+    private OrderTableRepository orderTableRepository;
 
     @Mock
-    private TableGroupDao tableGroupDao;
+    private OrderRepository orderRepository;
 
     @InjectMocks
     private TableGroupService tableGroupService;
@@ -44,15 +44,13 @@ class TableGroupServiceTest {
     @Test
     void createTableGroup() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, null, 4, true);
-        OrderTable orderTable2 = new OrderTable(2L, null, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         List<Long> orderTableIds = Arrays.asList(orderTable1.getId(), orderTable2.getId());
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
 
-        when(orderTableDao.findAllByIdIn(orderTableIds)).thenReturn(Arrays.asList(orderTable1, orderTable2));
-        when(tableGroupDao.save(tableGroup)).thenReturn(tableGroup);
-        when(orderTableDao.save(orderTable1)).thenReturn(orderTable1);
-        when(orderTableDao.save(orderTable2)).thenReturn(orderTable2);
+        when(orderTableRepository.findAllByIdIn(orderTableIds)).thenReturn(Arrays.asList(orderTable1, orderTable2));
+        when(tableGroupRepository.save(tableGroup)).thenReturn(tableGroup);
 
         // when
         TableGroup result = tableGroupService.create(tableGroup);
@@ -79,7 +77,7 @@ class TableGroupServiceTest {
     @Test
     void minumumOrderTableException() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, null, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1));
 
         // when & then
@@ -91,11 +89,11 @@ class TableGroupServiceTest {
     @Test
     void notExistOrderTableException() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, null, 4, true);
-        OrderTable orderTable2 = new OrderTable(2L, null, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
 
-        when(orderTableDao.findAllByIdIn(anyList())).thenReturn(new ArrayList<>());
+        when(orderTableRepository.findAllByIdIn(anyList())).thenReturn(new ArrayList<>());
 
         // when & then
         assertThatThrownBy(() -> tableGroupService.create(tableGroup))
@@ -106,11 +104,11 @@ class TableGroupServiceTest {
     @Test
     void notEmptyOrderTableException() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, null, 4, false);
-        OrderTable orderTable2 = new OrderTable(2L, null, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, false);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
 
-        when(orderTableDao.findAllByIdIn(anyList())).thenReturn(Arrays.asList(orderTable1, orderTable2));
+        when(orderTableRepository.findAllByIdIn(anyList())).thenReturn(Arrays.asList(orderTable1, orderTable2));
 
         // when & then
         assertThatThrownBy(() -> tableGroupService.create(tableGroup))
@@ -121,11 +119,12 @@ class TableGroupServiceTest {
     @Test
     void alreadyTableGroupException() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, 1L, 4, true);
-        OrderTable orderTable2 = new OrderTable(2L, 2L, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
+        orderTable1.setTableGroup(tableGroup);
 
-        when(orderTableDao.findAllByIdIn(anyList())).thenReturn(Arrays.asList(orderTable1, orderTable2));
+        when(orderTableRepository.findAllByIdIn(anyList())).thenReturn(Arrays.asList(orderTable1, orderTable2));
 
         // when & then
         assertThatThrownBy(() -> tableGroupService.create(tableGroup))
@@ -136,28 +135,28 @@ class TableGroupServiceTest {
     @Test
     void unTableGroup() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, 1L, 4, true);
-        OrderTable orderTable2 = new OrderTable(2L, 1L, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         List<Long> orderTableIds = Arrays.asList(orderTable1.getId(), orderTable2.getId());
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
 
-        when(orderTableDao.findAllByTableGroupId(tableGroup.getId()))
+        when(orderTableRepository.findAllByTableGroupId(tableGroup.getId()))
                 .thenReturn(Arrays.asList(orderTable1, orderTable2));
 
-        when(orderDao.existsByOrderTableIdInAndOrderStatusIn(
-                orderTableIds, Arrays.asList(OrderStatus.COOKING.name(), OrderStatus.MEAL.name()))
+        when(orderRepository.existsByOrderTableIdInAndOrderStatusIn(
+                orderTableIds, Arrays.asList(OrderStatus.COOKING, OrderStatus.MEAL))
         ).thenReturn(false);
 
-        when(orderTableDao.save(orderTable1)).thenReturn(orderTable1);
-        when(orderTableDao.save(orderTable2)).thenReturn(orderTable2);
+        when(orderTableRepository.save(orderTable1)).thenReturn(orderTable1);
+        when(orderTableRepository.save(orderTable2)).thenReturn(orderTable2);
 
         // when
         tableGroupService.ungroup(tableGroup.getId());
 
         // then
         assertAll(
-                () -> assertThat(orderTable1.getTableGroupId()).isNull(),
-                () -> assertThat(orderTable2.getTableGroupId()).isNull()
+                () -> assertThat(orderTable1.getTableGroup()).isNull(),
+                () -> assertThat(orderTable2.getTableGroup()).isNull()
         );
     }
 
@@ -165,16 +164,16 @@ class TableGroupServiceTest {
     @Test
     void unTableGroupException() {
         // given
-        OrderTable orderTable1 = new OrderTable(1L, 1L, 4, true);
-        OrderTable orderTable2 = new OrderTable(2L, 1L, 4, true);
+        OrderTable orderTable1 = new OrderTable(1L, 4, true);
+        OrderTable orderTable2 = new OrderTable(2L, 4, true);
         List<Long> orderTableIds = Arrays.asList(orderTable1.getId(), orderTable2.getId());
         TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now(), Arrays.asList(orderTable1, orderTable2));
 
-        when(orderTableDao.findAllByTableGroupId(tableGroup.getId()))
+        when(orderTableRepository.findAllByTableGroupId(tableGroup.getId()))
                 .thenReturn(Arrays.asList(orderTable1, orderTable2));
 
-        when(orderDao.existsByOrderTableIdInAndOrderStatusIn(
-                orderTableIds, Arrays.asList(OrderStatus.COOKING.name(), OrderStatus.MEAL.name()))
+        when(orderRepository.existsByOrderTableIdInAndOrderStatusIn(
+                orderTableIds, Arrays.asList(OrderStatus.COOKING, OrderStatus.MEAL))
         ).thenReturn(true);
 
         // when & then

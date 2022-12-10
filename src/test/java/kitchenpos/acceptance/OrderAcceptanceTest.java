@@ -50,20 +50,20 @@ class OrderAcceptanceTest extends AcceptanceTest {
         김치 = 상품_생성_요청(new Product(2L, "김치", BigDecimal.valueOf(1_000))).as(Product.class);
         공기밥 = 상품_생성_요청(new Product(3L, "공기밥", BigDecimal.valueOf(1_000))).as(Product.class);
         한식 = 메뉴그룹_생성_요청(new MenuGroup(1L, "한식")).as(MenuGroup.class);
-        불고기상품 = new MenuProduct(1L, null, 불고기.getId(), 1L);
-        김치상품 = new MenuProduct(2L, null, 김치.getId(), 1L);
-        공기밥상품 = new MenuProduct(3L, null, 공기밥.getId(), 1L);
+        불고기상품 = new MenuProduct(null, 1L, 불고기정식, 불고기);
+        김치상품 = new MenuProduct(null, 1L, 불고기정식, 김치);
+        공기밥상품 = new MenuProduct(null, 1L, 불고기정식, 공기밥);
         불고기정식 = 메뉴_생성_요청(new Menu(
                 1L,
                 "불고기정식",
                 BigDecimal.valueOf(12_000L),
-                한식.getId(),
+                한식,
                 Arrays.asList(불고기상품, 김치상품, 공기밥상품)
         )).as(Menu.class);
 
-        주문테이블 = 주문테이블_생성_요청(new OrderTable(null, null, 0, false))
+        주문테이블 = 주문테이블_생성_요청(new OrderTable(null, 0, false))
                 .as(OrderTable.class);
-        불고기정식주문 = new OrderLineItem(null, null, 불고기정식.getId(), 1);
+        불고기정식주문 = new OrderLineItem(null, 불고기정식.getId(), 1);
         주문 = new Order(null, 주문테이블.getId(), null, null, Arrays.asList(불고기정식주문));
     }
 
@@ -94,7 +94,7 @@ class OrderAcceptanceTest extends AcceptanceTest {
     @Test
     void updaeOrderStatus() {
         // given
-        String expectedOrderStatus = OrderStatus.MEAL.name();
+        OrderStatus expectedOrderStatus = OrderStatus.MEAL;
         주문 = 주문_생성_요청(주문).as(Order.class);
         Order 업데이트된_주문 = new Order(
                 주문.getId(),
@@ -108,7 +108,7 @@ class OrderAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> response = 주문_상태_수정_요청(주문.getId(), 업데이트된_주문);
 
         // then
-        주문_상태_수정됨(response, expectedOrderStatus);
+        주문_상태_수정됨(response, expectedOrderStatus.name());
 
     }
 

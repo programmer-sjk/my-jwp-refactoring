@@ -14,6 +14,7 @@ import org.springframework.http.MediaType;
 import java.util.Arrays;
 
 import static kitchenpos.acceptance.TableAcceptanceTest.주문테이블_생성_요청;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("단체 지정 관련 기능")
 class TableGroupAcceptanceTest extends AcceptanceTest {
@@ -24,9 +25,9 @@ class TableGroupAcceptanceTest extends AcceptanceTest {
     @BeforeEach
     public void setUp() {
         super.setUp();
-        주문테이블_A = 주문테이블_생성_요청(new OrderTable(null, null, 4, true))
+        주문테이블_A = 주문테이블_생성_요청(new OrderTable(null, 4, true))
                 .as(OrderTable.class);
-        주문테이블_B = 주문테이블_생성_요청(new OrderTable(null, null, 4, true))
+        주문테이블_B = 주문테이블_생성_요청(new OrderTable(null, 4, true))
                 .as(OrderTable.class);
         우테캠_PRO_단체 = new TableGroup(1L, null, Arrays.asList(주문테이블_A, 주문테이블_B));
     }
