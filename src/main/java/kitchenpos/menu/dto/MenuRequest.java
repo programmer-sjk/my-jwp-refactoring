@@ -34,7 +34,7 @@ public class MenuRequest {
         return price;
     }
 
-    public long getMenuGroupId() {
+    public Long getMenuGroupId() {
         return menuGroupId;
     }
 
