@@ -1,21 +1,29 @@
 package kitchenpos.order.domain;
 
+import javax.persistence.*;
 import java.time.LocalDateTime;
 import java.util.List;
 
+@Entity
+@Table(name = "orders")
 public class Order {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long orderTableId;
-    private String orderStatus;
+    @Enumerated(EnumType.STRING)
+    private OrderStatus orderStatus;
     private LocalDateTime orderedTime;
+
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     private List<OrderLineItem> orderLineItems;
 
-    public Order() {}
+    protected Order() {}
 
     public Order(
             Long id,
             Long orderTableId,
-            String orderStatus,
+            OrderStatus orderStatus,
             LocalDateTime orderedTime,
             List<OrderLineItem> orderLineItems
     ) {
@@ -42,11 +50,11 @@ public class Order {
         this.orderTableId = orderTableId;
     }
 
-    public String getOrderStatus() {
+    public OrderStatus getOrderStatus() {
         return orderStatus;
     }
 
-    public void setOrderStatus(final String orderStatus) {
+    public void setOrderStatus(final OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
 
