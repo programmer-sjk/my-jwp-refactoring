@@ -3,8 +3,10 @@ package kitchenpos.menugroup.dto;
 import kitchenpos.menugroup.domain.MenuGroup;
 
 public class MenuGroupResponse {
-    private final Long id;
-    private final String name;
+    private Long id;
+    private String name;
+
+    protected MenuGroupResponse() {}
 
     private MenuGroupResponse(Long id, String name) {
         this.id = id;
@@ -12,7 +14,7 @@ public class MenuGroupResponse {
     }
 
     public static MenuGroupResponse from(MenuGroup menuGroup) {
-        return new MenuGroupResponse(menuGroup.getId(), menuGroup.getName());
+        return new MenuGroupResponse(menuGroup.getId(), menuGroup.getName().value());
     }
 
     public Long getId() {
