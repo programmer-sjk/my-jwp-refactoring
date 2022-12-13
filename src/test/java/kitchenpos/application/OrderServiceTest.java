@@ -1,19 +1,23 @@
 package kitchenpos.application;
 
+import kitchenpos.common.domain.Name;
+import kitchenpos.common.domain.Price;
+import kitchenpos.common.domain.Quantity;
 import kitchenpos.menu.domain.Menu;
-import kitchenpos.menu.domain.MenuPrice;
 import kitchenpos.menu.domain.MenuProduct;
 import kitchenpos.menu.repository.MenuRepository;
 import kitchenpos.menugroup.domain.MenuGroup;
 import kitchenpos.order.application.OrderService;
 import kitchenpos.order.domain.Order;
 import kitchenpos.order.domain.OrderLineItem;
+import kitchenpos.order.domain.OrderLineItems;
 import kitchenpos.order.domain.OrderStatus;
 import kitchenpos.order.dto.OrderLineItemRequest;
 import kitchenpos.order.dto.OrderRequest;
 import kitchenpos.order.dto.OrderResponse;
 import kitchenpos.order.dto.UpdateOrderStatusRequest;
 import kitchenpos.order.repository.OrderRepository;
+import kitchenpos.ordertable.domain.NumberOfGuests;
 import kitchenpos.ordertable.domain.OrderTable;
 import kitchenpos.ordertable.repository.OrderTableRepository;
 import kitchenpos.product.domain.Product;
@@ -36,7 +40,6 @@ import java.util.stream.Collectors;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
-import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.when;
 
 @DisplayName("OrderService 테스트")
@@ -69,20 +72,19 @@ class OrderServiceTest {
 
     @BeforeEach
     void setUp() {
-        불고기 = new Product(1L, "불고기", BigDecimal.valueOf(10_000));
-        김치 = new Product(2L, "김치", BigDecimal.valueOf(1_000));
-        공기밥 = new Product(3L, "공기밥", BigDecimal.valueOf(1_000));
-        한식 = new MenuGroup(1L, "한식");
-        불고기정식 = new Menu(1L, "불고기정식", new MenuPrice(BigDecimal.valueOf(12_000L)), 한식);
-        불고기상품 = new MenuProduct(1L, 1L, 불고기정식, 불고기);
-        김치상품 = new MenuProduct(2L, 1L, 불고기정식, 김치);
-        공기밥상품 = new MenuProduct(3L, 1L, 불고기정식, 공기밥);
-        불고기정식.setMenuProducts(Arrays.asList(불고기상품, 김치상품, 공기밥상품));
+        불고기 = new Product(1L, new Name("불고기"), new Price(BigDecimal.valueOf(10_000)));
+        김치 = new Product(2L, new Name("김치"), new Price(BigDecimal.valueOf(1_000)));
+        공기밥 = new Product(3L, new Name("공기밥"), new Price(BigDecimal.valueOf(1_000)));
+        한식 = new MenuGroup(1L, new Name("한식"));
+        불고기정식 = new Menu(1L, new Name("불고기정식"), new Price(BigDecimal.valueOf(12_000L)), 한식);
+        불고기상품 = new MenuProduct(1L, new Quantity(1L), 불고기정식, 불고기);
+        김치상품 = new MenuProduct(2L, new Quantity(1L), 불고기정식, 김치);
+        공기밥상품 = new MenuProduct(3L, new Quantity(1L), 불고기정식, 공기밥);
 
-        주문테이블 = new OrderTable(1L, 0, false);
-        불고기정식주문 = new OrderLineItem(1L, 불고기정식);
+        주문테이블 = new OrderTable(1L, new NumberOfGuests(0), false);
+        불고기정식주문 = new OrderLineItem(new Quantity(1L), 불고기정식);
         주문 = new Order(주문테이블, OrderStatus.COOKING, LocalDateTime.now());
-        주문.addOrderLineItem(불고기정식주문);
+        주문.setOrderLineItems(new OrderLineItems(Arrays.asList(불고기정식주문)));
         불고기정식주문요청 = OrderLineItemRequest.of(불고기정식.getMenuGroup().getId(), 1L);
     }
 
@@ -90,14 +92,8 @@ class OrderServiceTest {
     @Test
     void createOrder() {
         // given
-        List<Long> menuIds = 주문.getOrderLineItems()
-                        .stream()
-                        .map(OrderLineItem::getMenu)
-                        .map(Menu::getId)
-                        .collect(Collectors.toList());
-        when(menuRepository.findAllById(menuIds)).thenReturn(Arrays.asList(불고기정식));
-        when(menuRepository.countByIdIn(menuIds)).thenReturn(menuIds.size());
-        when(orderTableRepository.findById(주문.getOrderTable().getId())).thenReturn(Optional.of(주문테이블));
+        when(menuRepository.findById(불고기정식.getId())).thenReturn(Optional.ofNullable(불고기정식));
+        when(orderTableRepository.findById(주문테이블.getId())).thenReturn(Optional.of(주문테이블));
         when(orderRepository.save(주문)).thenReturn(주문);
         OrderRequest request = OrderRequest.of(주문테이블.getId(), Arrays.asList(불고기정식주문요청));
 
@@ -127,7 +123,7 @@ class OrderServiceTest {
     void notExistOrderLineItemsException() {
         // given
         OrderRequest request = OrderRequest.of(주문테이블.getId(), Arrays.asList(불고기정식주문요청));
-        when(menuRepository.countByIdIn(anyList())).thenReturn(10);
+        when(menuRepository.findById(불고기정식.getId())).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> orderService.create(request))
@@ -145,8 +141,8 @@ class OrderServiceTest {
                 .collect(Collectors.toList());
         OrderRequest request = OrderRequest.of(주문테이블.getId(), Arrays.asList(불고기정식주문요청));
 
-        when(menuRepository.countByIdIn(menuIds)).thenReturn(menuIds.size());
-        when(orderTableRepository.findById(주문.getOrderTable().getId())).thenReturn(Optional.empty());
+        when(menuRepository.findById(불고기정식.getId())).thenReturn(Optional.ofNullable(불고기정식));
+        when(orderTableRepository.findById(주문테이블.getId())).thenReturn(Optional.empty());
 
         // when & then
         assertThatThrownBy(() -> orderService.create(request))
@@ -157,15 +153,16 @@ class OrderServiceTest {
     @Test
     void emptyOrderTableException() {
         // given
-        주문테이블.setEmpty(true);
+        Order order = new Order(주문테이블, OrderStatus.COMPLETION, LocalDateTime.now());
+        주문테이블.updateEmpty(true, Arrays.asList(order));
         List<Long> menuIds = 주문.getOrderLineItems()
                 .stream()
                 .map(OrderLineItem::getMenu)
                 .map(Menu::getId)
                 .collect(Collectors.toList());
         OrderRequest request = OrderRequest.of(주문테이블.getId(), Arrays.asList(불고기정식주문요청));
-        when(menuRepository.countByIdIn(menuIds)).thenReturn(menuIds.size());
-        when(orderTableRepository.findById(주문.getOrderTable().getId())).thenReturn(Optional.of(주문테이블));
+        when(menuRepository.findById(불고기정식.getId())).thenReturn(Optional.ofNullable(불고기정식));
+        when(orderTableRepository.findById(주문테이블.getId())).thenReturn(Optional.of(주문테이블));
 
         // when & then
         assertThatThrownBy(() -> orderService.create(request))
@@ -179,7 +176,7 @@ class OrderServiceTest {
         when(orderRepository.findAll()).thenReturn(Arrays.asList(주문));
 
         // when
-        List<OrderResponse> results = orderService.list();
+        List<OrderResponse> results = orderService.findAll();
 
         // then
         assertAll(

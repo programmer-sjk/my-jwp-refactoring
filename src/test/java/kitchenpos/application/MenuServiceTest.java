@@ -1,8 +1,10 @@
 package kitchenpos.application;
 
+import kitchenpos.common.domain.Name;
+import kitchenpos.common.domain.Price;
+import kitchenpos.common.domain.Quantity;
 import kitchenpos.menu.application.MenuService;
 import kitchenpos.menu.domain.Menu;
-import kitchenpos.menu.domain.MenuPrice;
 import kitchenpos.menu.domain.MenuProduct;
 import kitchenpos.menu.dto.MenuProductRequest;
 import kitchenpos.menu.dto.MenuRequest;
@@ -61,15 +63,14 @@ class MenuServiceTest {
 
     @BeforeEach
     void setUp() {
-        불고기 = new Product(1L, "불고기", BigDecimal.valueOf(10_000));
-        김치 = new Product(2L, "김치", BigDecimal.valueOf(1_000));
-        공기밥 = new Product(3L, "공기밥", BigDecimal.valueOf(1_000));
-        한식 = new MenuGroup(1L, "한식");
-        불고기정식 = new Menu(1L, "불고기정식", new MenuPrice(BigDecimal.valueOf(12_000L)), 한식);
-        불고기상품 = new MenuProduct(1L, 1L, 불고기정식, 불고기);
-        김치상품 = new MenuProduct(2L, 1L, 불고기정식, 김치);
-        공기밥상품 = new MenuProduct(3L, 1L, 불고기정식, 공기밥);
-        불고기정식.setMenuProducts(Arrays.asList(불고기상품, 김치상품, 공기밥상품));
+        불고기 = new Product(1L, new Name("불고기"), new Price(BigDecimal.valueOf(10_000)));
+        김치 = new Product(2L, new Name("김치"), new Price(BigDecimal.valueOf(1_000)));
+        공기밥 = new Product(3L, new Name("공기밥"), new Price(BigDecimal.valueOf(1_000)));
+        한식 = new MenuGroup(1L, new Name("한식"));
+        불고기정식 = new Menu(1L, new Name("불고기정식"), new Price(BigDecimal.valueOf(12_000L)), 한식);
+        불고기상품 = new MenuProduct(1L, new Quantity(1L), 불고기정식, 불고기);
+        김치상품 = new MenuProduct(2L, new Quantity(1L), 불고기정식, 김치);
+        공기밥상품 = new MenuProduct(3L, new Quantity(1L), 불고기정식, 공기밥);
     }
 
     @DisplayName("메뉴를 생성한다.")
@@ -80,11 +81,11 @@ class MenuServiceTest {
                 .stream()
                 .map(MenuProductRequest::from)
                 .collect(Collectors.toList());
-        MenuRequest request = MenuRequest.of(불고기정식.getName(), 불고기정식.getPrice().value(), 한식.getId(), menuProductRequests);
+        MenuRequest request = MenuRequest.of(불고기정식.getName().value(), 불고기정식.getPrice().value(), 한식.getId(), menuProductRequests);
         when(menuGroupRepository.findById(불고기정식.getMenuGroup().getId())).thenReturn(Optional.of(한식));
-        when(productRepository.findById(불고기상품.getProduct().getId())).thenReturn(Optional.of(불고기));
-        when(productRepository.findById(김치상품.getProduct().getId())).thenReturn(Optional.of(김치));
-        when(productRepository.findById(공기밥상품.getProduct().getId())).thenReturn(Optional.of(공기밥));
+        when(productRepository.findById(불고기.getId())).thenReturn(Optional.of(불고기));
+        when(productRepository.findById(김치.getId())).thenReturn(Optional.of(김치));
+        when(productRepository.findById(공기밥.getId())).thenReturn(Optional.of(공기밥));
         when(menuRepository.save(any())).thenReturn(불고기정식);
 
         // when
@@ -93,7 +94,7 @@ class MenuServiceTest {
         // then
         assertAll(
                 () -> assertThat(result.getId()).isEqualTo(불고기정식.getId()),
-                () -> assertThat(result.getName()).isEqualTo(불고기정식.getName())
+                () -> assertThat(result.getName()).isEqualTo(불고기정식.getName().value())
         );
     }
 
@@ -148,16 +149,16 @@ class MenuServiceTest {
     @Test
     void menuPriceException() {
         // given
-        불고기정식.setPrice(new MenuPrice(BigDecimal.valueOf(200_000)));
+        불고기정식.setPrice(new Price(BigDecimal.valueOf(200_000)));
         when(menuGroupRepository.findById(불고기정식.getMenuGroup().getId())).thenReturn(Optional.of(한식));
-        when(productRepository.findById(불고기상품.getProduct().getId())).thenReturn(Optional.of(불고기));
-        when(productRepository.findById(김치상품.getProduct().getId())).thenReturn(Optional.of(김치));
-        when(productRepository.findById(공기밥상품.getProduct().getId())).thenReturn(Optional.of(공기밥));
+        when(productRepository.findById(불고기.getId())).thenReturn(Optional.of(불고기));
+        when(productRepository.findById(김치.getId())).thenReturn(Optional.of(김치));
+        when(productRepository.findById(공기밥.getId())).thenReturn(Optional.of(공기밥));
         List<MenuProductRequest> menuProductRequests = Arrays.asList(불고기상품, 김치상품, 공기밥상품)
                 .stream()
                 .map(MenuProductRequest::from)
                 .collect(Collectors.toList());
-        MenuRequest request = MenuRequest.of(불고기정식.getName(), 불고기정식.getPrice().value(), 한식.getId(), menuProductRequests);
+        MenuRequest request = MenuRequest.of(불고기정식.getName().value(), 불고기정식.getPrice().value(), 한식.getId(), menuProductRequests);
 
         // when & then
         assertThatThrownBy(() -> menuService.create(request))
@@ -172,13 +173,13 @@ class MenuServiceTest {
         when(menuRepository.findAll()).thenReturn(menus);
 
         // when
-        List<MenuResponse> results = menuService.list();
+        List<MenuResponse> results = menuService.findAll();
 
         // then
         assertAll(
                 () -> assertThat(results).hasSize(1),
                 () -> assertThat(results.get(0).getId()).isEqualTo(불고기정식.getId()),
-                () -> assertThat(results.get(0).getName()).isEqualTo(불고기정식.getName())
+                () -> assertThat(results.get(0).getName()).isEqualTo(불고기정식.getName().value())
         );
     }
 }
