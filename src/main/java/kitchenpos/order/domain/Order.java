@@ -20,7 +20,7 @@ public class Order {
     @CreatedDate
     private LocalDateTime orderedTime;
 
-    @OneToMany(mappedBy = "orrder", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     private List<OrderLineItem> orderLineItems = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
