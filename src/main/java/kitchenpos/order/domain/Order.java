@@ -1,11 +1,11 @@
 package kitchenpos.order.domain;
 
+import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.ordertable.domain.OrderTable;
 import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -20,8 +20,8 @@ public class Order {
     @CreatedDate
     private LocalDateTime orderedTime;
 
-    @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
-    private List<OrderLineItem> orderLineItems = new ArrayList<>();
+    @Embedded
+    private OrderLineItems orderLineItems = new OrderLineItems();
 
     @ManyToOne(fetch = FetchType.LAZY)
     private OrderTable orderTable;
@@ -33,8 +33,9 @@ public class Order {
             OrderTable orderTable,
             OrderStatus orderStatus,
             LocalDateTime orderedTime,
-            List<OrderLineItem> orderLineItems
+            OrderLineItems orderLineItems
     ) {
+        validate(orderTable);
         this.id = id;
         this.orderTable = orderTable;
         this.orderStatus = orderStatus;
@@ -47,17 +48,26 @@ public class Order {
             OrderStatus orderStatus,
             LocalDateTime orderedTime
     ) {
+        validate(orderTable);
         this.orderTable = orderTable;
         this.orderStatus = orderStatus;
         this.orderedTime = orderedTime;
     }
 
-    public Long getId() {
-        return id;
+    private void validate(OrderTable orderTable) {
+        if (orderTable.isEmpty()) {
+            throw new IllegalArgumentException(ErrorCode.ORDER_TABLE_IS_EMPTY.getMessage());
+        }
     }
 
-    public void setId(final Long id) {
-        this.id = id;
+    public void validateOrderStatusShouldComplete() {
+        if (!OrderStatus.COMPLETION.equals(orderStatus)) {
+            throw new IllegalArgumentException(ErrorCode.ORDER_STATUS_NOT_COMPLETE.getMessage());
+        }
+    }
+
+    public Long getId() {
+        return id;
     }
 
     public OrderTable getOrderTable() {
@@ -72,22 +82,28 @@ public class Order {
         this.orderStatus = orderStatus;
     }
 
+    public void updateOrderStatus(final OrderStatus status) {
+        validateUpdateOrderStatus();
+        this.orderStatus = status;
+    }
+
+    private void validateUpdateOrderStatus() {
+        if (OrderStatus.COMPLETION.equals(orderStatus)) {
+            throw new IllegalArgumentException(ErrorCode.ORDER_STATUS_COMPLETE.getMessage());
+        }
+    }
+
     public LocalDateTime getOrderedTime() {
         return orderedTime;
     }
 
     public List<OrderLineItem> getOrderLineItems() {
-        return orderLineItems;
+        return orderLineItems.get();
     }
 
-    public void addOrderLineItem(OrderLineItem orderLineItem) {
-        orderLineItems.add(orderLineItem);
-        orderLineItem.setOrder(this);
-    }
-
-    private void updateOrderLineItems(List<OrderLineItem> orderLineItems) {
+    public void setOrderLineItems(OrderLineItems orderLineItems) {
         this.orderLineItems = orderLineItems;
-        orderLineItems.forEach(item -> item.setOrder(this));
+        orderLineItems.setOrder(this);
     }
 
     @Override
