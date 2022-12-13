@@ -1,8 +1,7 @@
 package kitchenpos.menu.application;
 
+import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.menu.domain.Menu;
-import kitchenpos.menu.domain.MenuProduct;
-import kitchenpos.menu.dto.MenuProductRequest;
 import kitchenpos.menu.dto.MenuRequest;
 import kitchenpos.menu.dto.MenuResponse;
 import kitchenpos.menu.repository.MenuRepository;
@@ -13,8 +12,6 @@ import kitchenpos.product.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,32 +33,26 @@ public class MenuService {
 
     @Transactional
     public MenuResponse create(final MenuRequest request) {
-        final BigDecimal price = request.getPrice();
-
         MenuGroup menuGroup = menuGroupRepository.findById(request.getMenuGroupId())
-                .orElseThrow(IllegalArgumentException::new);
+                .orElseThrow(() -> new IllegalArgumentException(ErrorCode.MENU_GROUP_IS_NOT_EXIST.getMessage()));
+        List<Product> products = findAllProductByIds(request.getMenuProductIds());
 
-        List<MenuProductRequest> menuProductRequests = request.getMenuProducts();
-
-        BigDecimal sum = BigDecimal.ZERO;
-        List<MenuProduct> menuProducts = new ArrayList<>();
-        for (final MenuProductRequest menuProductrequest : menuProductRequests) {
-            final Product product = productRepository.findById(menuProductrequest.getProductId())
-                    .orElseThrow(IllegalArgumentException::new);
-
-            sum = sum.add(product.getPrice().multiply(BigDecimal.valueOf(menuProductrequest.getQuantity())));
-            menuProducts.add(menuProductrequest.createMenuProduct(product));
-        }
-
-        if (price.compareTo(sum) > 0) {
-            throw new IllegalArgumentException();
-        }
-
-        final Menu savedMenu = menuRepository.save(request.createMenu(menuGroup, menuProducts));
+        final Menu savedMenu = menuRepository.save(request.createMenu(menuGroup, products));
         return MenuResponse.from(savedMenu);
     }
 
-    public List<MenuResponse> list() {
+    private List<Product> findAllProductByIds(List<Long> ids) {
+        return ids.stream()
+                .map(this::findProductById)
+                .collect(Collectors.toList());
+    }
+
+    private Product findProductById(Long id) {
+        return productRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(ErrorCode.PRODUCT_IS_NOT_EXIST.getMessage()));
+    }
+
+    public List<MenuResponse> findAll() {
         return menuRepository.findAll()
                 .stream()
                 .map(MenuResponse::from)

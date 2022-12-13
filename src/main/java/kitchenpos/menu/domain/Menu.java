@@ -1,9 +1,11 @@
 package kitchenpos.menu.domain;
 
+import kitchenpos.common.constant.ErrorCode;
+import kitchenpos.common.domain.Name;
+import kitchenpos.common.domain.Price;
 import kitchenpos.menugroup.domain.MenuGroup;
 
 import javax.persistence.*;
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -11,26 +13,27 @@ public class Menu {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private String name;
     @Embedded
-    private MenuPrice price;
+    private Name name;
+    @Embedded
+    private Price price;
 
     @ManyToOne(fetch = FetchType.LAZY)
     private MenuGroup menuGroup;
 
-    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
-    private List<MenuProduct> menuProducts = new ArrayList<>();
+    @Embedded
+    private MenuProducts menuProducts = new MenuProducts();
 
     protected Menu() {}
 
-    public Menu(Long id, String name, MenuPrice price, MenuGroup menuGroup) {
+    public Menu(Long id, Name name, Price price, MenuGroup menuGroup) {
         this.id = id;
         this.name = name;
         this.price = price;
         this.menuGroup = menuGroup;
     }
 
-    public Menu(String name, MenuPrice price, MenuGroup menuGroup) {
+    public Menu(Name name, Price price, MenuGroup menuGroup) {
         this.name = name;
         this.price = price;
         this.menuGroup = menuGroup;
@@ -40,23 +43,15 @@ public class Menu {
         return id;
     }
 
-    public void setId(final Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
+    public Name getName() {
         return name;
     }
 
-    public void setName(final String name) {
-        this.name = name;
-    }
-
-    public MenuPrice getPrice() {
+    public Price getPrice() {
         return price;
     }
 
-    public void setPrice(final MenuPrice price) {
+    public void setPrice(final Price price) {
         this.price = price;
     }
 
@@ -65,16 +60,20 @@ public class Menu {
     }
 
     public List<MenuProduct> getMenuProducts() {
-        return menuProducts;
+        return menuProducts.get();
     }
 
-    public void setMenuProducts(final List<MenuProduct> menuProducts) {
+    public void setMenuProducts(MenuProducts menuProducts) {
+        validatePrice(menuProducts.totalMenuPrice());
+
         this.menuProducts = menuProducts;
+        menuProducts.get().forEach(menuProduct -> menuProduct.setMenu(this));
     }
 
-    public void addProduct(MenuProduct menuProduct) {
-        this.menuProducts.add(menuProduct);
-        menuProduct.setMenu(this);
+    private void validatePrice(Price totalPrice) {
+        if (price.isBiggerThan(totalPrice)) {
+            throw new IllegalArgumentException(ErrorCode.MENU_PRICE_SHOULD_NOT_OVER_TOTAL_PRICE.getMessage());
+        }
     }
 
     @Override
