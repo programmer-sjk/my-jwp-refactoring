@@ -4,8 +4,6 @@ import kitchenpos.common.domain.Quantity;
 import kitchenpos.menu.domain.MenuProduct;
 import kitchenpos.product.domain.Product;
 
-import java.util.List;
-
 public class MenuProductRequest {
     private Long productId;
     private long quantity;
