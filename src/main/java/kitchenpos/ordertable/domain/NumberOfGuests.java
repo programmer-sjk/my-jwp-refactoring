@@ -2,12 +2,10 @@ package kitchenpos.ordertable.domain;
 
 import kitchenpos.common.constant.ErrorCode;
 
-import javax.persistence.Embeddable;
+import javax.persistence.*;
 
 @Embeddable
 public class NumberOfGuests {
-    private static final int ZERO = 0;
-
     private int numberOfGuests;
 
     protected NumberOfGuests() {}
@@ -18,7 +16,7 @@ public class NumberOfGuests {
     }
 
     private void validate(int numberOfGuests) {
-        if (numberOfGuests < ZERO) {
+        if (numberOfGuests < 0) {
             throw new IllegalArgumentException(ErrorCode.NUMBER_OF_GUESTS_MINIMUM.getMessage());
         }
     }

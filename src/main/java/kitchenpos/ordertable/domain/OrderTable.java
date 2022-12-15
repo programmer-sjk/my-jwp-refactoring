@@ -1,11 +1,8 @@
 package kitchenpos.ordertable.domain;
 
 import kitchenpos.common.constant.ErrorCode;
-import kitchenpos.order.domain.Order;
-import kitchenpos.tablegroup.domain.TableGroup;
 
 import javax.persistence.*;
-import java.util.List;
 import java.util.Objects;
 
 @Entity
@@ -16,62 +13,46 @@ public class OrderTable {
     @Embedded
     private NumberOfGuests numberOfGuests;
     private boolean empty;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "table_group_id")
-    private TableGroup tableGroup;
+    private Long tableGroupId;
 
     protected OrderTable() {}
-
-    public OrderTable(Long id, NumberOfGuests numberOfGuests, boolean empty) {
-        this.id = id;
-        this.numberOfGuests = numberOfGuests;
-        this.empty = empty;
-    }
 
     public OrderTable(NumberOfGuests numberOfGuests, boolean empty) {
         this.numberOfGuests = numberOfGuests;
         this.empty = empty;
     }
 
-    public void updateEmpty(boolean empty, List<Order> orders) {
-        validateHasTableGroup();
-        orders.forEach(Order::validateOrderStatusShouldComplete);
+    public OrderTable(Long id, NumberOfGuests numberOfGuests, boolean empty) {
+        this(numberOfGuests, empty);
+        this.id = id;
+    }
 
+    public void setEmpty(boolean empty) {
         this.empty = empty;
     }
 
-    public void updateNumberOfGuest(NumberOfGuests numberOfGuests) {
-        validateShouldNotEmpty();
+    public void setNumberOfGuest(NumberOfGuests numberOfGuests) {
         this.numberOfGuests = numberOfGuests;
     }
 
-    private void validateShouldNotEmpty() {
-        if (isEmpty()) {
-            throw new IllegalArgumentException(ErrorCode.ORDER_TABLE_IS_EMPTY.getMessage());
-        }
-    }
-
-    private void validateHasTableGroup() {
-        if (tableGroup != null) {
-            throw new IllegalArgumentException(ErrorCode.ALREADY_TABLE_GROUP.getMessage());
-        }
-    }
-
     public void ungroup() {
-        this.tableGroup = null;
+        this.tableGroupId = null;
+    }
+
+    public boolean hasTableGroup() {
+        return tableGroupId != null;
     }
 
     public Long getId() {
         return id;
     }
 
-    public TableGroup getTableGroup() {
-        return tableGroup;
+    public Long getTableGroupId() {
+        return tableGroupId;
     }
 
-    public void setTableGroup(final TableGroup tableGroup) {
-        this.tableGroup = tableGroup;
+    public void setTableGroupId(Long tableGroupId) {
+        this.tableGroupId = tableGroupId;
     }
 
     public int getNumberOfGuests() {
@@ -84,8 +65,12 @@ public class OrderTable {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         OrderTable that = (OrderTable) o;
         return Objects.equals(id, that.id);
     }
