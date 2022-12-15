@@ -1,14 +1,14 @@
 package kitchenpos.tablegroup.domain;
 
-import kitchenpos.order.domain.Order;
-import kitchenpos.ordertable.domain.OrderTable;
-import kitchenpos.ordertable.domain.OrderTables;
 import kitchenpos.tablegroup.event.TableGroupEventPublisher;
 import kitchenpos.tablegroup.event.TableUnGroupEventPublisher;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.domain.AbstractAggregateRoot;
 
-import javax.persistence.*;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
