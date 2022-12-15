@@ -2,7 +2,7 @@ package kitchenpos.ordertable.domain;
 
 import kitchenpos.common.constant.ErrorCode;
 
-import javax.persistence.*;
+import javax.persistence.Embeddable;
 
 @Embeddable
 public class NumberOfGuests {

@@ -2,7 +2,10 @@ package kitchenpos.ordertable.domain;
 
 import kitchenpos.common.constant.ErrorCode;
 
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Embeddable;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
