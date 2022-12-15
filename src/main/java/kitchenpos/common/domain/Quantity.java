@@ -1,31 +1,27 @@
 package kitchenpos.common.domain;
 
-import kitchenpos.common.constant.ErrorCode;
-
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 
 @Embeddable
 public class Quantity {
-    public static final Long ZERO = 0L;
-
     @Column(nullable = false)
-    private Long quantity;
+    private long quantity;
 
     protected Quantity() {}
 
-    public Quantity(Long quantity) {
+    public Quantity(long quantity) {
         validate(quantity);
         this.quantity = quantity;
     }
 
-    private void validate(Long quantity) {
-        if (quantity < ZERO) {
-            throw new IllegalArgumentException(ErrorCode.QUANTITY_SHOULD_OVER_ZERO.getMessage());
+    private void validate(long quantity) {
+        if (quantity < 0L) {
+            throw new IllegalArgumentException(String.format("수량은 0보다 작을 수 없습니다. input = %d", quantity));
         }
     }
 
-    public Long value() {
+    public long value() {
         return quantity;
     }
 }
