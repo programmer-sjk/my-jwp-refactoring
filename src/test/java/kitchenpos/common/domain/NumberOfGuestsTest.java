@@ -1,4 +1,4 @@
-package kitchenpos.domain;
+package kitchenpos.common.domain;
 
 import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.ordertable.domain.NumberOfGuests;
