@@ -1,18 +1,14 @@
 package kitchenpos.tablegroup.application;
 
 import kitchenpos.fixture.TestOrderFactory;
+import kitchenpos.order.domain.NumberOfGuests;
 import kitchenpos.order.domain.Order;
-import kitchenpos.order.domain.OrderStatus;
-import kitchenpos.order.repository.OrderRepository;
-import kitchenpos.ordertable.domain.NumberOfGuests;
-import kitchenpos.ordertable.domain.OrderTable;
-import kitchenpos.ordertable.repository.OrderTableRepository;
+import kitchenpos.order.domain.OrderTable;
 import kitchenpos.tablegroup.domain.TableGroup;
 import kitchenpos.tablegroup.dto.TableGroupRequest;
 import kitchenpos.tablegroup.dto.TableGroupResponse;
 import kitchenpos.tablegroup.repository.TableGroupRepository;
 import kitchenpos.tablegroup.validator.TableGroupValidator;
-import org.aspectj.weaver.ast.Or;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,13 +16,11 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.mockito.Mockito.when;
 
@@ -49,7 +43,7 @@ class TableGroupServiceTest {
         OrderTable orderTable1 = new OrderTable(1L, new NumberOfGuests(4), true);
         OrderTable orderTable2 = new OrderTable(2L, new NumberOfGuests(4), true);
         List<Long> orderTableIds = Arrays.asList(orderTable1.getId(), orderTable2.getId());
-        TableGroup tableGroup = new TableGroup(LocalDateTime.now());
+        TableGroup tableGroup = new TableGroup();
         TableGroupRequest request = TableGroupRequest.of(orderTableIds);
 
         when(tableGroupRepository.save(tableGroup)).thenReturn(tableGroup);
@@ -72,10 +66,9 @@ class TableGroupServiceTest {
         Order order1 = TestOrderFactory.createCompleteOrderWith(orderTable1);
         Order order2 = TestOrderFactory.createCompleteOrderWith(orderTable2);
         List<Long> orderTableIds = Arrays.asList(orderTable1.getId(), orderTable2.getId());
-        TableGroup tableGroup = new TableGroup(LocalDateTime.now());
+        TableGroup tableGroup = new TableGroup();
 
         when(tableGroupRepository.findById(tableGroup.getId())).thenReturn(Optional.of(tableGroup));
-        when(tableGroupRepository.save(tableGroup)).thenReturn(tableGroup);
 
         // when
         tableGroupService.ungroup(tableGroup.getId());

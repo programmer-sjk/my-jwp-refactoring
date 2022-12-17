@@ -1,13 +1,14 @@
 package kitchenpos.ordertable.domain;
 
 import kitchenpos.fixture.TestOrderFactory;
+import kitchenpos.order.domain.NumberOfGuests;
 import kitchenpos.order.domain.Order;
 import kitchenpos.order.domain.OrderStatus;
+import kitchenpos.order.domain.OrderTable;
 import kitchenpos.tablegroup.domain.TableGroup;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -48,7 +49,7 @@ class OrderTableTest {
         // given
         OrderTable orderTable1 = new OrderTable(new NumberOfGuests(4), true);
         OrderTable orderTable2 = new OrderTable(new NumberOfGuests(4), true);
-        TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now());
+        TableGroup tableGroup = new TableGroup(1L);
         orderTable1.setTableGroupId(tableGroup.getId());
 
         // when

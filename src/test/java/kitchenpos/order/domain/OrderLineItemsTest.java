@@ -6,8 +6,6 @@ import kitchenpos.fixture.TestMenuFactory;
 import kitchenpos.fixture.TestOrderFactory;
 import kitchenpos.menu.domain.Menu;
 import kitchenpos.menugroup.domain.MenuGroup;
-import kitchenpos.ordertable.domain.NumberOfGuests;
-import kitchenpos.ordertable.domain.OrderTable;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

@@ -2,11 +2,11 @@ package kitchenpos.tablegroup.validator;
 
 import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.fixture.TestOrderFactory;
+import kitchenpos.order.domain.NumberOfGuests;
 import kitchenpos.order.domain.Order;
+import kitchenpos.order.domain.OrderTable;
 import kitchenpos.order.repository.OrderRepository;
-import kitchenpos.ordertable.domain.NumberOfGuests;
-import kitchenpos.ordertable.domain.OrderTable;
-import kitchenpos.ordertable.repository.OrderTableRepository;
+import kitchenpos.order.repository.OrderTableRepository;
 import kitchenpos.tablegroup.domain.TableGroup;
 import kitchenpos.tablegroup.dto.TableGroupRequest;
 import org.junit.jupiter.api.DisplayName;
@@ -16,7 +16,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -135,7 +134,7 @@ class TableGroupValidatorTest {
         // given
         OrderTable orderTable = new OrderTable(1L, new NumberOfGuests(4), true);
         Order order = TestOrderFactory.createCompleteOrder();
-        TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now());
+        TableGroup tableGroup = new TableGroup(1L);
         when(orderTableRepository.findAllByTableGroupId(tableGroup.getId())).thenReturn(Arrays.asList(orderTable));
         when(orderRepository.findAllByOrderTableIdIn(Arrays.asList(orderTable.getId())))
                 .thenReturn(Arrays.asList(order));
@@ -150,7 +149,7 @@ class TableGroupValidatorTest {
         // given
         OrderTable orderTable = new OrderTable(1L, new NumberOfGuests(4), true);
         Order order = TestOrderFactory.createMealOrder();
-        TableGroup tableGroup = new TableGroup(1L, LocalDateTime.now());
+        TableGroup tableGroup = new TableGroup(1L);
         when(orderTableRepository.findAllByTableGroupId(tableGroup.getId())).thenReturn(Arrays.asList(orderTable));
         when(orderRepository.findAllByOrderTableIdIn(Arrays.asList(orderTable.getId())))
                 .thenReturn(Arrays.asList(order));

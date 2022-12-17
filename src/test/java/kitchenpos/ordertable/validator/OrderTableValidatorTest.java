@@ -2,10 +2,11 @@ package kitchenpos.ordertable.validator;
 
 import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.fixture.TestOrderFactory;
+import kitchenpos.order.domain.NumberOfGuests;
 import kitchenpos.order.domain.Order;
+import kitchenpos.order.domain.OrderTable;
 import kitchenpos.order.repository.OrderRepository;
-import kitchenpos.ordertable.domain.NumberOfGuests;
-import kitchenpos.ordertable.domain.OrderTable;
+import kitchenpos.order.validator.OrderTableValidator;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;

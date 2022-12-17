@@ -1,19 +1,13 @@
 package kitchenpos.fixture;
 
-import kitchenpos.order.domain.Order;
-import kitchenpos.order.domain.OrderLineItem;
-import kitchenpos.order.domain.OrderLineItems;
-import kitchenpos.order.domain.OrderStatus;
-import kitchenpos.ordertable.domain.NumberOfGuests;
-import kitchenpos.ordertable.domain.OrderTable;
+import kitchenpos.order.domain.*;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 public class TestOrderFactory {
     public static Order create(Long orderTableId, OrderStatus status, List<OrderLineItem> orderLineItems) {
-        return new Order(orderTableId, status, LocalDateTime.now(), new OrderLineItems(orderLineItems));
+        return new Order(orderTableId, status, new OrderLineItems(orderLineItems));
     }
 
     public static Order createCompleteOrder() {
@@ -21,7 +15,6 @@ public class TestOrderFactory {
         Order order = new Order(
                 orderTable.getId(),
                 OrderStatus.COMPLETION,
-                LocalDateTime.now(),
                 new OrderLineItems(new ArrayList<>())
         );
         orderTable.setEmpty(true);
@@ -32,7 +25,6 @@ public class TestOrderFactory {
         Order order = new Order(
                 orderTable.getId(),
                 OrderStatus.COMPLETION,
-                LocalDateTime.now(),
                 new OrderLineItems(new ArrayList<>())
         );
         orderTable.setEmpty(true);
@@ -44,7 +36,6 @@ public class TestOrderFactory {
         return new Order(
                 orderTable.getId(),
                 OrderStatus.MEAL,
-                LocalDateTime.now(),
                 new OrderLineItems(new ArrayList<>())
         );
     }
