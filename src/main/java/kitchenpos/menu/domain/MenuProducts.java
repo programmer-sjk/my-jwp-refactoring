@@ -2,10 +2,7 @@ package kitchenpos.menu.domain;
 
 import kitchenpos.common.domain.Price;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Embeddable;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
+import javax.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +29,7 @@ public class MenuProducts {
         return Collections.unmodifiableList(menuProducts);
     }
 
-    public void setMenu(Menu menu) {
+    void setMenu(Menu menu) {
         menuProducts.forEach(menuProduct -> menuProduct.setMenu(menu));
     }
 }

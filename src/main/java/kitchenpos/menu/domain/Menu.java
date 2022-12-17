@@ -1,7 +1,9 @@
 package kitchenpos.menu.domain;
 
+import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.common.domain.Name;
 import kitchenpos.common.domain.Price;
+import kitchenpos.menugroup.domain.MenuGroup;
 
 import javax.persistence.*;
 import java.util.List;
