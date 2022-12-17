@@ -2,10 +2,10 @@ package kitchenpos.tablegroup.validator;
 
 import kitchenpos.common.constant.ErrorCode;
 import kitchenpos.order.domain.Order;
+import kitchenpos.order.domain.OrderTable;
+import kitchenpos.order.domain.OrderTables;
 import kitchenpos.order.repository.OrderRepository;
-import kitchenpos.ordertable.domain.OrderTable;
-import kitchenpos.ordertable.domain.OrderTables;
-import kitchenpos.ordertable.repository.OrderTableRepository;
+import kitchenpos.order.repository.OrderTableRepository;
 import kitchenpos.tablegroup.domain.TableGroup;
 import kitchenpos.tablegroup.dto.TableGroupRequest;
 import org.springframework.stereotype.Component;
@@ -49,7 +49,13 @@ public class TableGroupValidator {
             throw new IllegalArgumentException(ErrorCode.ORDER_TABLE_IS_NOT_EXIST.getMessage());
         }
 
-        orderTables.validateGroup();
+        if (orderTables.isNotEmpty()) {
+            throw new IllegalArgumentException(ErrorCode.NOT_EMPTY_STATUS_IN_ORDER_TABLES.getMessage());
+        }
+
+        if (orderTables.hasGroup()) {
+            throw new IllegalArgumentException(ErrorCode.ORDER_TABLES_HAS_GROUP_TABLE.getMessage());
+        }
     }
 
     public void validateUnGroup(TableGroup tableGroup) {

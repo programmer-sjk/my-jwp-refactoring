@@ -38,7 +38,6 @@ public class TableGroupService {
         tableGroupValidator.validateUnGroup(tableGroup);
 
         tableGroup.ungroup();
-        tableGroupRepository.save(tableGroup);
     }
 
     private TableGroup findTableGroupById(Long id) {
