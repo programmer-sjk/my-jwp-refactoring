@@ -1,5 +1,7 @@
 package kitchenpos.common.domain;
 
+import kitchenpos.common.constant.ErrorCode;
+
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
 

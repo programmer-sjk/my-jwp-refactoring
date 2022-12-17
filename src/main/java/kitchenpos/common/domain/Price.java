@@ -1,7 +1,8 @@
 package kitchenpos.common.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Embeddable;
+import kitchenpos.common.constant.ErrorCode;
+
+import javax.persistence.*;
 import java.math.BigDecimal;
 
 @Embeddable
